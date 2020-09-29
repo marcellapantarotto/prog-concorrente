@@ -6,31 +6,60 @@
 #define MA 10 //macacos que andam de A para B
 #define MB 10 //macacos que andam de B para A
 
+// (se usar apenas um lock garante a exclusão mútua da região crítica por apenas 1 leitor ou 1 escritor)
+pthread_mutex_t lock_travessia = PTHREAD_MUTEX_INITIALIZER; // lock da travessia
+pthread_mutex_t lock_corda = PTHREAD_MUTEX_INITIALIZER;     // lock da corda
 
+// int vez = (rand() % 2);
+int vez = 1;
+
+// leitores
 void * macacoAB(void * a) {
     int i = *((int *) a);    
     while(1){
-         //Procedimentos para acessar a corda
-	printf("Macaco %d passado de A para B \n",i);
-	sleep(1);
-	 //Procedimentos para quando sair da corda
+    // região de exclusão mútua
+    // pthread_mutex_lock(&lock_travessia); // macaco de A->B pega o lock da travessia
+    if (vez == 0){
+      pthread_mutex_lock(&lock_corda);
+        //Procedimentos para acessar a corda
+        printf("Macaco %d passado de A para B \n", i);
+        sleep(1);
+      pthread_mutex_unlock(&lock_corda);
+    }
+    vez = (rand() % 2);
+    sleep(1);
+    // printf("vez = %d\n", vez);
+
+    //Procedimentos para quando sair da corda
+    // pthread_mutex_unlock(&lock_travessia); // macaco de A->B libera o lock da travessia
     }
     pthread_exit(0);
 }
 
+// leitores
 void * macacoBA(void * a) {
     int i = *((int *) a);    
     while(1){
-         //Procedimentos para acessar a corda
-	printf("Macaco %d passado de B para A \n",i);
-	sleep(1);
-	 //Procedimentos para quando sair da corda
+    // região de exclusão mútua
+    // pthread_mutex_lock(&lock_travessia); // macaco de B->A pega o lock da travessia
+    if (vez == 1){
+      pthread_mutex_lock(&lock_corda);
+        //Procedimentos para acessar a corda
+        printf("Macaco %d passado de B para A \n", i);
+        sleep(1);
+      pthread_mutex_unlock(&lock_corda);
+    }
+    vez = (rand() % 2);
+    sleep(1);
+    // printf("vez = %d\n", vez);
+   
+    //Procedimentos para quando sair da corda
+    // pthread_mutex_unlock(&lock_travessia); // macaco de B->A libera o lock da travessia
     }
     pthread_exit(0);
 }
 
-
-
+// são como os escritores então vai precisar de 2 locks nos 2 macacos e gorila
 void * gorila(void * a){
     while(1){
 	//Procedimentos para acessar a corda
@@ -62,8 +91,8 @@ int main(int argc, char * argv[])
           }
         }
     }
-    pthread_t g;
-    pthread_create(&g, NULL, &gorila, NULL);
+    // pthread_t g;
+    // pthread_create(&g, NULL, &gorila, NULL);
 
   
     pthread_join(macacos[0], NULL);
