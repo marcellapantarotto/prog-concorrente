@@ -5,7 +5,7 @@
 
 #define TRUE 1
 
-#define NE 3 //numero de escritores
+#define NE 10 //numero de escritores
 #define NL 10 //numero de leitores
 
 // (se usar apenas um lock garante a exclusão mútua da região crítica por apenas 1 leitor ou 1 escritor)
@@ -53,7 +53,7 @@ void *reader(void *arg)
 			pthread_mutex_lock(&lock_nl);			// leitor pega o lock de leitura
 				num_leitores++;						// incrementa contador de leitores acessando o banco de dados
 				if (num_leitores == 1){				// teste para ver se é o primeiro leitor
-					pthread_mutex_lock(&lock_bd);	// se for o primeiro, fecha o lock do banco de dados
+					pthread_mutex_lock(&lock_bd); 	// se for o primeiro, fecha o lock do banco de dados
 				}	
 			pthread_mutex_unlock(&lock_nl);			// leitor libera o lock de leitura
 		pthread_mutex_unlock(&lock_new);			// escritor libera o lock novo

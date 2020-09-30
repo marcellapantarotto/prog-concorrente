@@ -11,7 +11,7 @@ pthread_mutex_t lock_travessia = PTHREAD_MUTEX_INITIALIZER; // lock da travessia
 pthread_mutex_t lock_corda = PTHREAD_MUTEX_INITIALIZER;     // lock da corda
 
 // int vez = (rand() % 2);
-int vez = 1;
+int vez = 0;
 
 // leitores
 void * macacoAB(void * a) {
@@ -23,12 +23,10 @@ void * macacoAB(void * a) {
       pthread_mutex_lock(&lock_corda);
         //Procedimentos para acessar a corda
         printf("Macaco %d passado de A para B \n", i);
+        vez = (rand() % 2);
         sleep(1);
       pthread_mutex_unlock(&lock_corda);
     }
-    vez = (rand() % 2);
-    sleep(1);
-    // printf("vez = %d\n", vez);
 
     //Procedimentos para quando sair da corda
     // pthread_mutex_unlock(&lock_travessia); // macaco de A->B libera o lock da travessia
@@ -46,12 +44,10 @@ void * macacoBA(void * a) {
       pthread_mutex_lock(&lock_corda);
         //Procedimentos para acessar a corda
         printf("Macaco %d passado de B para A \n", i);
+        vez = (rand() % 2);
         sleep(1);
       pthread_mutex_unlock(&lock_corda);
     }
-    vez = (rand() % 2);
-    sleep(1);
-    // printf("vez = %d\n", vez);
    
     //Procedimentos para quando sair da corda
     // pthread_mutex_unlock(&lock_travessia); // macaco de B->A libera o lock da travessia
