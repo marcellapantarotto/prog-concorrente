@@ -12,21 +12,40 @@ pthread_mutex_t lock_corda = PTHREAD_MUTEX_INITIALIZER;     // lock da corda
 
 // int vez = (rand() % 2);
 int vez = 0;
+// int atravessou = 0;
+
 
 // leitores
 void * macacoAB(void * a) {
+    int atravessou = 0;
     int i = *((int *) a);    
     while(1){
     // região de exclusão mútua
     // pthread_mutex_lock(&lock_travessia); // macaco de A->B pega o lock da travessia
     if (vez == 0){
-      pthread_mutex_lock(&lock_corda);
+      if(atravessou == 0){
+         pthread_mutex_lock(&lock_corda);
         //Procedimentos para acessar a corda
         printf("Macaco %d passado de A para B \n", i);
+        atravessou = 1;
         vez = (rand() % 2);
         sleep(1);
       pthread_mutex_unlock(&lock_corda);
+      } else {
+        // printf("%d já passou (A -> B)\n", i);
+        // atravessou = 1;
+        // sleep(1);
+
+          int j = (rand() % MA+MB);
+          if(j%2 == 0 && j != i){
+            int *id = (int *) malloc(sizeof(int));
+            *id = j;
+            macacoAB((void*)id);
+        }
+        
+      }
     }
+    
 
     //Procedimentos para quando sair da corda
     // pthread_mutex_unlock(&lock_travessia); // macaco de A->B libera o lock da travessia
@@ -36,17 +55,33 @@ void * macacoAB(void * a) {
 
 // leitores
 void * macacoBA(void * a) {
+    int atravessou = 0;
     int i = *((int *) a);    
     while(1){
     // região de exclusão mútua
     // pthread_mutex_lock(&lock_travessia); // macaco de B->A pega o lock da travessia
     if (vez == 1){
-      pthread_mutex_lock(&lock_corda);
+      if(atravessou == 0){
+        pthread_mutex_lock(&lock_corda);
         //Procedimentos para acessar a corda
         printf("Macaco %d passado de B para A \n", i);
+        atravessou = 1;
         vez = (rand() % 2);
         sleep(1);
       pthread_mutex_unlock(&lock_corda);
+      } else {
+        // printf("%d já passou (B -> A)\n", i);
+        // atravessou = 1;
+        // sleep(1);
+
+          int j = (rand() % MA+MB);
+          if(j%2 != 0 && j != i){
+            int *id = (int *) malloc(sizeof(int));
+            *id = j;
+            macacoBA((void*)id);
+        }
+      }
+      
     }
    
     //Procedimentos para quando sair da corda
@@ -68,6 +103,7 @@ void * gorila(void * a){
 
 int main(int argc, char * argv[])
 {
+    srand(time(NULL));
     pthread_t macacos[MA+MB];
     int *id;
     int i = 0;
