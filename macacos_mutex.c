@@ -78,7 +78,7 @@ void * gorilaAB(void * a){
       pthread_mutex_lock(&lock_vez);
         pthread_mutex_lock(&lock_corda);
           printf("Gorila passado de A para B \n");
-          sleep(1);
+          sleep(5);
         pthread_mutex_unlock(&lock_vez);
         
       //Procedimentos para quando sair da corda
@@ -94,7 +94,7 @@ void * gorilaBA(void * a){
     pthread_mutex_lock(&lock_vez);
       pthread_mutex_lock(&lock_corda);
         printf("Gorila passado de B para A \n");
-        sleep(1);
+        sleep(5);
       pthread_mutex_unlock(&lock_vez);
     //Procedimentos para quando sair da corda
     pthread_mutex_unlock(&lock_corda);
