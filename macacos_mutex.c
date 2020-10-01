@@ -6,7 +6,6 @@
 #define MA 10 //macacos que andam de A para B
 #define MB 10 //macacos que andam de B para A
 
-// (se usar apenas um lock garante a exclusão mútua da região crítica por apenas 1 leitor ou 1 escritor)
 pthread_mutex_t lock_corda = PTHREAD_MUTEX_INITIALIZER;     // lock da corda
 pthread_mutex_t lock_vez = PTHREAD_MUTEX_INITIALIZER;       // lock da vez
 pthread_mutex_t lock_mAB = PTHREAD_MUTEX_INITIALIZER;       // lock dos macacos de A->B
