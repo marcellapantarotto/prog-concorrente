@@ -7,96 +7,81 @@
 #define MB 10 //macacos que andam de B para A
 
 // (se usar apenas um lock garante a exclusão mútua da região crítica por apenas 1 leitor ou 1 escritor)
-pthread_mutex_t lock_travessia = PTHREAD_MUTEX_INITIALIZER; // lock da travessia
 pthread_mutex_t lock_corda = PTHREAD_MUTEX_INITIALIZER;     // lock da corda
+pthread_mutex_t lock_vez = PTHREAD_MUTEX_INITIALIZER;       // lock da vez
+pthread_mutex_t lock_mAB = PTHREAD_MUTEX_INITIALIZER;       // lock dos macacos de A->B
+pthread_mutex_t lock_mBA = PTHREAD_MUTEX_INITIALIZER;       // lock dos macacos de B->A
 
-// int vez = (rand() % 2);
 int vez = 0;
-// int atravessou = 0;
+int num_mAB = 0;  // número de macacos de A->B
+int num_mBA = 0;  // número de macacos de B->A
 
-
-// leitores
 void * macacoAB(void * a) {
-    int atravessou = 0;
-    int i = *((int *) a);    
-    while(1){
-    // região de exclusão mútua
-    // pthread_mutex_lock(&lock_travessia); // macaco de A->B pega o lock da travessia
-    if (vez == 0){
-      if(atravessou == 0){
-         pthread_mutex_lock(&lock_corda);
-        //Procedimentos para acessar a corda
-        printf("Macaco %d passado de A para B \n", i);
-        atravessou = 1;
-        vez = (rand() % 2);
-        sleep(1);
-      pthread_mutex_unlock(&lock_corda);
-      } else {
-        // printf("%d já passou (A -> B)\n", i);
-        // atravessou = 1;
-        // sleep(1);
-
-          int j = (rand() % MA+MB);
-          if(j%2 == 0 && j != i){
-            int *id = (int *) malloc(sizeof(int));
-            *id = j;
-            macacoAB((void*)id);
+  int i = *((int *) a);    
+  while(1){
+    // Procedimentos para entrar na corda
+    pthread_mutex_lock(&lock_vez);
+      pthread_mutex_lock(&lock_mAB); // macaco de A->B pega o lock da travessia
+        num_mAB++;
+        if(num_mAB == 1){
+          pthread_mutex_lock(&lock_corda);
         }
-        
-      }
-    }
+      pthread_mutex_unlock(&lock_mAB);
+    pthread_mutex_unlock(&lock_vez);
     
+    printf("Macaco %d passando de A para B \n", i);
+    sleep(1);
 
-    //Procedimentos para quando sair da corda
-    // pthread_mutex_unlock(&lock_travessia); // macaco de A->B libera o lock da travessia
-    }
-    pthread_exit(0);
+    // Procedimentos para quando sair da corda
+    pthread_mutex_lock(&lock_mAB); // macaco de A->B pega o lock da travessia
+        num_mAB--;
+        if(num_mAB == 0){
+          pthread_mutex_unlock(&lock_corda);
+        }
+    pthread_mutex_unlock(&lock_mAB); 
+  }
+  pthread_exit(0);
 }
 
 // leitores
 void * macacoBA(void * a) {
-    int atravessou = 0;
-    int i = *((int *) a);    
-    while(1){
-    // região de exclusão mútua
-    // pthread_mutex_lock(&lock_travessia); // macaco de B->A pega o lock da travessia
-    if (vez == 1){
-      if(atravessou == 0){
-        pthread_mutex_lock(&lock_corda);
-        //Procedimentos para acessar a corda
-        printf("Macaco %d passado de B para A \n", i);
-        atravessou = 1;
-        vez = (rand() % 2);
-        sleep(1);
-      pthread_mutex_unlock(&lock_corda);
-      } else {
-        // printf("%d já passou (B -> A)\n", i);
-        // atravessou = 1;
-        // sleep(1);
-
-          int j = (rand() % MA+MB);
-          if(j%2 != 0 && j != i){
-            int *id = (int *) malloc(sizeof(int));
-            *id = j;
-            macacoBA((void*)id);
+  int i = *((int *) a);    
+  while(1){
+    // Procedimentos para entrar na corda
+    pthread_mutex_lock(&lock_vez);
+      pthread_mutex_lock(&lock_mBA); // macaco de A->B pega o lock da travessia
+        num_mBA++;
+        if(num_mBA == 1){
+          pthread_mutex_lock(&lock_corda);
         }
-      }
-      
-    }
-   
-    //Procedimentos para quando sair da corda
-    // pthread_mutex_unlock(&lock_travessia); // macaco de B->A libera o lock da travessia
-    }
-    pthread_exit(0);
+      pthread_mutex_unlock(&lock_mBA);
+    pthread_mutex_unlock(&lock_vez);
+
+    printf("Macaco %d passando de B para A \n", i);
+    sleep(1);
+
+    // Procedimentos para quando sair da corda
+    pthread_mutex_lock(&lock_mBA); // macaco de A->B pega o lock da travessia
+        num_mBA--;
+        if(num_mBA == 0){
+          pthread_mutex_unlock(&lock_corda);
+        }
+    pthread_mutex_unlock(&lock_mBA); 
+  }
+  pthread_exit(0);
 }
 
 // são como os escritores então vai precisar de 2 locks nos 2 macacos e gorila
 void * gorila(void * a){
     while(1){
-	//Procedimentos para acessar a corda
-	printf("Gorila passado de A para B \n");
-	sleep(5);
+      //Procedimentos para acessar a corda
+      pthread_mutex_lock(&lock_vez);
+        pthread_mutex_lock(&lock_corda);
+          printf("Gorila passado de A para B \n");
+          sleep(5);
         //Procedimentos para quando sair da corda
+        pthread_mutex_unlock(&lock_corda);
+      pthread_mutex_unlock(&lock_vez);
      }
     pthread_exit(0);
 }

@@ -11,7 +11,7 @@
 // (se usar apenas um lock garante a exclusão mútua da região crítica por apenas 1 leitor ou 1 escritor)
 pthread_mutex_t lock_bd = PTHREAD_MUTEX_INITIALIZER;	// lock do banco de dados
 pthread_mutex_t lock_nl = PTHREAD_MUTEX_INITIALIZER;	// lock de leitura
-pthread_mutex_t lock_new = PTHREAD_MUTEX_INITIALIZER;	// lock novo --> serve para os leitores e escritores competirem entre si pra pegar o lock do banco de dados
+pthread_mutex_t lock_vez = PTHREAD_MUTEX_INITIALIZER;	// lock da vez que quem vai passar --> serve para os leitores e escritores competirem entre si pra pegar o lock do banco de dados
 
 int num_leitores = 0;	 // contador de leitores que estão acessando o banco de dados para leitura
 
@@ -49,14 +49,14 @@ void *reader(void *arg)
 	int i = *((int *)arg);
 	while (TRUE){ /* repete para sempre */
 		// região de exclusão mútua, entre os leitores
-		pthread_mutex_lock(&lock_new);				// escritor pega lock novo
+		pthread_mutex_lock(&lock_vez);				// escritor pega lock vez
 			pthread_mutex_lock(&lock_nl);			// leitor pega o lock de leitura
 				num_leitores++;						// incrementa contador de leitores acessando o banco de dados
 				if (num_leitores == 1){				// teste para ver se é o primeiro leitor
 					pthread_mutex_lock(&lock_bd); 	// se for o primeiro, fecha o lock do banco de dados
 				}	
 			pthread_mutex_unlock(&lock_nl);			// leitor libera o lock de leitura
-		pthread_mutex_unlock(&lock_new);			// escritor libera o lock novo
+		pthread_mutex_unlock(&lock_vez);			// escritor libera o lock vez
 	
 		read_data_base(i); 							/* acesso aos dados */
 
@@ -77,12 +77,12 @@ void *writer(void *arg){
 	int i = *((int *)arg);
 	while (TRUE){								/* repete para sempre */	
 		think_up_data(i); 						/* região não crítica */		// fica fora do lock, pois não atrapalha o acesso aos dados
-		pthread_mutex_lock(&lock_new);			// escritor pega lock novo
+		pthread_mutex_lock(&lock_vez);			// escritor pega lock vez
 			// o lock garante que mais de um escritor não acesse o banco de dados ao mesmo tempo, vai ter sempre no máximo 1 escritor na região crítica
 			pthread_mutex_lock(&lock_bd);		// escritor pega o lock do banco de dados
 				write_data_base(i); 			/* atualiza os dados */
 			pthread_mutex_unlock(&lock_bd);		// escritor libera o lock do banco de dados
-		pthread_mutex_unlock(&lock_new);		// escritor libera o lock novo
+		pthread_mutex_unlock(&lock_vez);		// escritor libera o lock vez
 	}
 	pthread_exit(0);
 }
