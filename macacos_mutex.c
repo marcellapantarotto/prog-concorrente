@@ -15,6 +15,8 @@ pthread_mutex_t lock_mBA = PTHREAD_MUTEX_INITIALIZER;       // lock dos macacos 
 int vez = 0;
 int num_mAB = 0;  // número de macacos de A->B
 int num_mBA = 0;  // número de macacos de B->A
+int num_gAB = 1;  // número de macacos de A->B
+int num_gBA = 1;  // número de macacos de B->A
 
 void * macacoAB(void * a) {
   int i = *((int *) a);    
@@ -26,8 +28,8 @@ void * macacoAB(void * a) {
         if(num_mAB == 1){
           pthread_mutex_lock(&lock_corda);
         }
-      pthread_mutex_unlock(&lock_mAB);
-    pthread_mutex_unlock(&lock_vez);
+      pthread_mutex_unlock(&lock_vez);
+    pthread_mutex_unlock(&lock_mAB);
     
     printf("Macaco %d passando de A para B \n", i);
     sleep(1);
@@ -54,8 +56,8 @@ void * macacoBA(void * a) {
         if(num_mBA == 1){
           pthread_mutex_lock(&lock_corda);
         }
-      pthread_mutex_unlock(&lock_mBA);
-    pthread_mutex_unlock(&lock_vez);
+      pthread_mutex_unlock(&lock_vez);
+    pthread_mutex_unlock(&lock_mBA);
 
     printf("Macaco %d passando de B para A \n", i);
     sleep(1);
@@ -78,9 +80,8 @@ void * gorilaAB(void * a){
       pthread_mutex_lock(&lock_vez);
         pthread_mutex_lock(&lock_corda);
           printf("Gorila passado de A para B \n");
-          sleep(5);
         pthread_mutex_unlock(&lock_vez);
-        
+        sleep(1);
       //Procedimentos para quando sair da corda
       pthread_mutex_unlock(&lock_corda);
       
@@ -94,8 +95,8 @@ void * gorilaBA(void * a){
     pthread_mutex_lock(&lock_vez);
       pthread_mutex_lock(&lock_corda);
         printf("Gorila passado de B para A \n");
-        sleep(5);
       pthread_mutex_unlock(&lock_vez);
+      sleep(1);
     //Procedimentos para quando sair da corda
     pthread_mutex_unlock(&lock_corda);
     
