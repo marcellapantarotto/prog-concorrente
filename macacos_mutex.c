@@ -72,18 +72,35 @@ void * macacoBA(void * a) {
 }
 
 // são como os escritores então vai precisar de 2 locks nos 2 macacos e gorila
-void * gorila(void * a){
+void * gorilaAB(void * a){ 
     while(1){
       //Procedimentos para acessar a corda
       pthread_mutex_lock(&lock_vez);
         pthread_mutex_lock(&lock_corda);
           printf("Gorila passado de A para B \n");
-          sleep(5);
-        //Procedimentos para quando sair da corda
-        pthread_mutex_unlock(&lock_corda);
-      pthread_mutex_unlock(&lock_vez);
+          sleep(1);
+        pthread_mutex_unlock(&lock_vez);
+        
+      //Procedimentos para quando sair da corda
+      pthread_mutex_unlock(&lock_corda);
+      
      }
     pthread_exit(0);
+}
+
+void * gorilaBA(void * a){  
+  while(1){
+    //Procedimentos para acessar a corda
+    pthread_mutex_lock(&lock_vez);
+      pthread_mutex_lock(&lock_corda);
+        printf("Gorila passado de B para A \n");
+        sleep(1);
+      pthread_mutex_unlock(&lock_vez);
+    //Procedimentos para quando sair da corda
+    pthread_mutex_unlock(&lock_corda);
+    
+    }
+  pthread_exit(0);
 }
 
 int main(int argc, char * argv[])
@@ -108,8 +125,12 @@ int main(int argc, char * argv[])
           }
         }
     }
-    // pthread_t g;
-    // pthread_create(&g, NULL, &gorila, NULL);
+
+    pthread_t g1;
+    pthread_create(&g1, NULL, &gorilaAB, NULL);
+
+    pthread_t g2;
+    pthread_create(&g2, NULL, &gorilaBA, NULL);
 
   
     pthread_join(macacos[0], NULL);
