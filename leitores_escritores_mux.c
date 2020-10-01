@@ -54,9 +54,10 @@ void *reader(void *arg)
 				num_leitores++;						// incrementa contador de leitores acessando o banco de dados
 				if (num_leitores == 1){				// teste para ver se é o primeiro leitor
 					pthread_mutex_lock(&lock_bd); 	// se for o primeiro, fecha o lock do banco de dados
-				}	
-			pthread_mutex_unlock(&lock_nl);			// leitor libera o lock de leitura
-		pthread_mutex_unlock(&lock_vez);			// escritor libera o lock vez
+				}
+			pthread_mutex_unlock(&lock_vez);		// escritor libera o lock vez		
+		pthread_mutex_unlock(&lock_nl);				// leitor libera o lock de leitura
+
 	
 		read_data_base(i); 							/* acesso aos dados */
 
@@ -79,10 +80,11 @@ void *writer(void *arg){
 		think_up_data(i); 						/* região não crítica */		// fica fora do lock, pois não atrapalha o acesso aos dados
 		pthread_mutex_lock(&lock_vez);			// escritor pega lock vez
 			// o lock garante que mais de um escritor não acesse o banco de dados ao mesmo tempo, vai ter sempre no máximo 1 escritor na região crítica
-			pthread_mutex_lock(&lock_bd);		// escritor pega o lock do banco de dados
+			pthread_mutex_lock(&lock_bd);		// escritor pega o lock do banco de dado
 				write_data_base(i); 			/* atualiza os dados */
-			pthread_mutex_unlock(&lock_bd);		// escritor libera o lock do banco de dados
-		pthread_mutex_unlock(&lock_vez);		// escritor libera o lock vez
+			pthread_mutex_unlock(&lock_vez);	// escritor libera o lock vez
+		pthread_mutex_unlock(&lock_bd);			// escritor libera o lock do banco de dados
+
 	}
 	pthread_exit(0);
 }
