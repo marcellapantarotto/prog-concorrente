@@ -30,11 +30,10 @@ void remove_data();
 int buffer[N] = {0};
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t produtores_cond = PTHREAD_COND_INITIALIZER;
-pthread_cond_t consumidores_cond = PTHREAD_COND_INITIALIZER;
+pthread_cond_t produtor_cond = PTHREAD_COND_INITIALIZER;
+pthread_cond_t consumidor_cond = PTHREAD_COND_INITIALIZER;
 
-int pQuer = 0;
-int cQuer = 0;
+int count = 0;
 
 void main(argc, argv) int argc;
 char *argv[];
@@ -85,49 +84,48 @@ void *produtor(void *pi) {
     item = produce_item();
 
     pthread_mutex_lock(&mutex);
-      pQuer++;
-      while (cQuer != 0) {
-        pthread_cond_wait(&produtores_cond, &mutex);
+      while (count == N) {
+        pthread_cond_wait(&produtor_cond, &mutex);
       }
-      pQuer--;
+      insert_data(item);
+      count += 1;
     pthread_mutex_unlock(&mutex);
 
-    printf("Produtor está produzindo conteúdo\n");
+    printf("PRODUTOR está produzindo conteúdo\n\n");
     sleep(1);
 
-    pthread_mutex_lock(&mutex);
-      pQuer--;
-      printf("Produtor terminou\n");
-    pthread_mutex_unlock(&mutex);
-
-    // como só tem 1 consumidor, não há problema usar signal
-    pthread_cond_signal(&consumidores_cond);
+    if (count == 1){
+      // como só tem 1 consumidor, não há problema usar signal
+    pthread_cond_signal(&consumidor_cond);
+    } 
   }
   pthread_exit(0);
 }
 
 void *consumidor(void *pi) {
+  int item;
+
   while (1) {
     sleep(rand() % 2);
 
+    if (count == 0)
+    item = produce_item();
+
     pthread_mutex_lock(&mutex);
-      cQuer++;
-      if (pQuer != 0) {
-        pthread_cond_wait(&consumidores_cond, &mutex);
+      while (count == 0) {
+        pthread_cond_wait(&consumidor_cond, &mutex);
       }
-      cQuer--;
+      remove_data(item);
+      count -= 1;
     pthread_mutex_unlock(&mutex);
 
-    printf("Consumidor está consumindo conteúdo\n");
+    printf("CONSUMIDOR está consumindo conteúdo\n\n");
     sleep(1);
 
-    pthread_mutex_lock(&mutex);
-      cQuer--;
-      printf("Consumidor terminou\n");
-    pthread_mutex_unlock(&mutex);
-
-    // como só tem 1 consumidor, não há problema usar signal
-    pthread_cond_signal(&produtores_cond);
+    if (count == N - 1){
+      // como só tem 1 produtor, não há problema usar signal
+    pthread_cond_signal(&produtor_cond);
+    } 
   }
   pthread_exit(0);
 }
@@ -145,9 +143,11 @@ int produce_item(){
 }
 
 void insert_data(){
-
+  // TODO
+  printf("--Inserindo data no buffer\n");
 }
 
 void remove_data(){
-
+  // TODO
+  printf("--Removendo data do buffer\n");
 }
