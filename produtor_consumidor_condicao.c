@@ -23,8 +23,9 @@ void *produtor(void *meuid);
 void *consumidor(void *meuid);
 void print_buffer();
 int produce_item();
-void insert_data();
-void remove_data();
+void insert_data(int data, long int i);
+void remove_data(int data, long int i);
+long int find_index();
 
 // declarando e inicializando o vetor do buffer com 0 em todas as posições
 int buffer[N] = {0};
@@ -34,8 +35,11 @@ pthread_cond_t produtor_cond = PTHREAD_COND_INITIALIZER;
 pthread_cond_t consumidor_cond = PTHREAD_COND_INITIALIZER;
 
 int count = 0;
+long int index_insert = 0;
+long int index_remove = 0;
 
-void main(argc, argv) int argc;
+void main(argc, argv)
+int argc;
 char *argv[];
 {
 
@@ -87,7 +91,8 @@ void *produtor(void *pi) {
       while (count == N) {
         pthread_cond_wait(&produtor_cond, &mutex);
       }
-      insert_data(item);
+      index_insert = find_index();
+      insert_data(item, index_insert);
       count += 1;
     pthread_mutex_unlock(&mutex);
 
@@ -108,14 +113,12 @@ void *consumidor(void *pi) {
   while (1) {
     sleep(rand() % 2);
 
-    if (count == 0)
-    item = produce_item();
-
     pthread_mutex_lock(&mutex);
       while (count == 0) {
         pthread_cond_wait(&consumidor_cond, &mutex);
       }
-      remove_data(item);
+      index_remove = find_index();
+      remove_data(item, index_remove);
       count -= 1;
     pthread_mutex_unlock(&mutex);
 
@@ -142,12 +145,20 @@ int produce_item(){
   return 1;
 }
 
-void insert_data(){
+void insert_data(int data, long int index){
   // TODO
   printf("--Inserindo data no buffer\n");
+  buffer[index] = data;
 }
 
-void remove_data(){
+void remove_data(int data, long int index){
   // TODO
   printf("--Removendo data do buffer\n");
+
+}
+
+long int find_index(){
+  int index;
+
+  return index;
 }
