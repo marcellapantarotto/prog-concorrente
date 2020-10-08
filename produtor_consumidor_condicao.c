@@ -23,9 +23,9 @@ void *produtor(void *meuid);
 void *consumidor(void *meuid);
 void print_buffer();
 int produce_item();
-void insert_data(int data, long int i);
-void remove_data(int data, long int i);
-long int find_index();
+void insert_data(int data, int i);
+void remove_data(long int i);
+int find_index();
 
 // declarando e inicializando o vetor do buffer com 0 em todas as posições
 int buffer[N] = {0};
@@ -35,8 +35,10 @@ pthread_cond_t produtor_cond = PTHREAD_COND_INITIALIZER;
 pthread_cond_t consumidor_cond = PTHREAD_COND_INITIALIZER;
 
 int count = 0;
-long int index_insert = 0;
-long int index_remove = 0;
+int index_insert = 0;
+int index_remove = 0;
+
+void __attribute__ ((destructor))  dtor() { print_buffer(); };
 
 void main(argc, argv)
 int argc;
@@ -77,7 +79,7 @@ char *argv[];
     }
   }
 
-  pthread_join(tPid[0], NULL);
+  pthread_join(tPid[0], NULL);  
 }
 
 void *produtor(void *pi) {
@@ -97,7 +99,9 @@ void *produtor(void *pi) {
     pthread_mutex_unlock(&mutex);
 
     printf("PRODUTOR está produzindo conteúdo\n\n");
+    print_buffer();
     sleep(1);
+    
 
     if (count == 1){
       // como só tem 1 consumidor, não há problema usar signal
@@ -118,12 +122,15 @@ void *consumidor(void *pi) {
         pthread_cond_wait(&consumidor_cond, &mutex);
       }
       index_remove = find_index();
-      remove_data(item, index_remove);
+      // printf(index_remove);
+      remove_data(index_remove);
       count -= 1;
     pthread_mutex_unlock(&mutex);
 
     printf("CONSUMIDOR está consumindo conteúdo\n\n");
+    print_buffer();
     sleep(1);
+    
 
     if (count == N - 1){
       // como só tem 1 produtor, não há problema usar signal
@@ -145,20 +152,27 @@ int produce_item(){
   return 1;
 }
 
-void insert_data(int data, long int index){
+void insert_data(int data, int index){
   // TODO
   printf("--Inserindo data no buffer\n");
   buffer[index] = data;
+  // print_buffer();
 }
 
-void remove_data(int data, long int index){
-  // TODO
+void remove_data(long int index){
   printf("--Removendo data do buffer\n");
-
+  buffer[index] = 0;
+  // print_buffer();
 }
 
-long int find_index(){
-  int index;
-
-  return index;
+int find_index(){
+  int aux = -1;
+  for (int i = 0; i < N; i++) {
+    if (buffer[i] == 0) {
+      aux += 1;
+    }
+    // printf("~index = %d\n", i);
+    // printf("aux = %d\n", aux);
+    return i;
+  }
 }
