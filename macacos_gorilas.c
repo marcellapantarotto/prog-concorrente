@@ -8,7 +8,7 @@
 #define GB 1
 
 
-void * macacoA(void * meuid);
+void * macacoA (void * meuid);
 void * macacoB (void * meuid);
 void * gorilaA (void * meuid);
 void * gorilaB (void * meuid);

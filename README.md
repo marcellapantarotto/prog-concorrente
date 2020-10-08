@@ -1,4 +1,4 @@
-# concurrent-programming
+# Programação Concorrente
 
 Estudos dirigidos e atividades da disciplina de Programação Concorrente da Universidade de Brasília (UnB)
 
