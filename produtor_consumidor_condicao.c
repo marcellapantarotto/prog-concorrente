@@ -5,7 +5,7 @@ sleep = cond_wait ; wakeup = signal
 terá 2 condições: uma para produtores pararem e outra para consumidores pararem
 produtor dá signal na condição do consumidor e o consumidor dá signal na condição do produtor
 
-buffer --> vetor de tamanho N
+buffer --> vetor de tamanho N ==> buffer cirucular!!!
 com 2 índices (contadores): 1 para o produtor inserir o próximo ítem e 1 para marcar onde o consumidor irá retirar o próximo ítem
 índices são acessados dentro da região de lock
 */
@@ -15,9 +15,9 @@ com 2 índices (contadores): 1 para o produtor inserir o próximo ítem e 1 para
 #include <pthread.h>
 #include <unistd.h>
 
-#define PR 1 //número de produtores
-#define CN 1 // número de consumidores
-#define N 5  //tamanho do buffer
+#define PR 1  //número de produtores
+#define CN 1  // número de consumidores
+#define N 5   //tamanho do buffer
 
 void *produtor(void *meuid);
 void *consumidor(void *meuid);
@@ -25,20 +25,18 @@ void print_buffer();
 int produce_item();
 void insert_data(int data, int i);
 void remove_data(long int i);
-int find_index();
+int find_index_insert();
+int find_index_remove();
 
-// declarando e inicializando o vetor do buffer com 0 em todas as posições
-int buffer[N] = {0};
+int buffer[N] = {0};    // declarando e inicializando o vetor do buffer com 0 em todas as posições
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t produtor_cond = PTHREAD_COND_INITIALIZER;
 pthread_cond_t consumidor_cond = PTHREAD_COND_INITIALIZER;
 
-int count = 0;
-int index_insert = 0;
-int index_remove = 0;
-
-void __attribute__ ((destructor))  dtor() { print_buffer(); };
+int count = 0;          // contador de posições
+int index_insert = 0;   // índice do produtor
+int index_remove = 0;   // índice do consumidor
 
 void main(argc, argv)
 int argc;
@@ -49,6 +47,7 @@ char *argv[];
   int i, n, m;
   int *id;
 
+  printf("START ");
   print_buffer();
 
   pthread_t tPid[PR];
@@ -89,53 +88,54 @@ void *produtor(void *pi) {
     sleep(rand() % 2);
     item = produce_item();
 
-    pthread_mutex_lock(&mutex);
-      while (count == N) {
-        pthread_cond_wait(&produtor_cond, &mutex);
+    pthread_mutex_lock(&mutex);   // produtor pega o lock do buffer
+      while (count == N) {  // verifica se o buffer está cheio
+        printf("Buffer está cheio!\n\n");
+        pthread_cond_wait(&produtor_cond, &mutex);  // adormece o produtor
       }
-      index_insert = find_index();
-      insert_data(item, index_insert);
+
+      index_insert = find_index_insert();   // procurar index para inserir dado
+      insert_data(item, index_insert);      // inserir dado do buffer
+      printf("PRODUTOR está produzindo conteúdo\n");
+      
       count += 1;
-    pthread_mutex_unlock(&mutex);
-
-    printf("PRODUTOR está produzindo conteúdo\n\n");
-    print_buffer();
-    sleep(1);
-    
-
-    if (count == 1){
-      // como só tem 1 consumidor, não há problema usar signal
-    pthread_cond_signal(&consumidor_cond);
-    } 
+      print_buffer();
+      
+      if (count == 1){  // verifica que o buffer não está vazio para acordar o consumidor
+        printf("Acorda consumidor!\n\n");
+        pthread_cond_signal(&consumidor_cond);  // como só tem 1 consumidor, não há problema usar signal
+      } 
+    pthread_mutex_unlock(&mutex);   // produtor solta o lock do buffer
+    sleep(rand() % 2);
+    // sleep((rand() % 5) + 5);     // teste -> alternar com consumidor
   }
   pthread_exit(0);
 }
 
 void *consumidor(void *pi) {
-  int item;
-
   while (1) {
     sleep(rand() % 2);
 
-    pthread_mutex_lock(&mutex);
-      while (count == 0) {
-        pthread_cond_wait(&consumidor_cond, &mutex);
+    pthread_mutex_lock(&mutex);   // consumidor pega o lock do buffer
+      while (count == 0) {    // verifica se o buffer está vazio
+        printf("Buffer está vazio!\n\n");
+        pthread_cond_wait(&consumidor_cond, &mutex);    // adormece o produtor
       }
-      index_remove = find_index();
-      // printf(index_remove);
-      remove_data(index_remove);
+
+      index_remove = find_index_remove();   // procurar index do dado a ser removido
+      remove_data(index_remove);    // remover dado do buffer
+      printf("CONSUMIDOR está consumindo conteúdo\n");
+
       count -= 1;
-    pthread_mutex_unlock(&mutex);
+      print_buffer();
 
-    printf("CONSUMIDOR está consumindo conteúdo\n\n");
-    print_buffer();
-    sleep(1);
-    
-
-    if (count == N - 1){
-      // como só tem 1 produtor, não há problema usar signal
-    pthread_cond_signal(&produtor_cond);
-    } 
+      if (count == N - 1){    // verifica que o buffer não está cheio para acordar o produtor
+        printf("Acorda produtor!\n\n");
+        pthread_cond_signal(&produtor_cond);    // como só tem 1 produtor, não há problema usar signal
+      }
+    pthread_mutex_unlock(&mutex);   // consumidor solta o lock do buffer
+    sleep(rand() % 2);
+    // sleep((rand() % 5) + 5);     // teste -> alternar com produtor
   }
   pthread_exit(0);
 }
@@ -153,26 +153,37 @@ int produce_item(){
 }
 
 void insert_data(int data, int index){
-  // TODO
-  printf("--Inserindo data no buffer\n");
   buffer[index] = data;
-  // print_buffer();
 }
 
 void remove_data(long int index){
-  printf("--Removendo data do buffer\n");
   buffer[index] = 0;
-  // print_buffer();
 }
 
-int find_index(){
+int find_index_insert(){
   int aux = -1;
   for (int i = 0; i < N; i++) {
-    if (buffer[i] == 0) {
-      aux += 1;
+    if (buffer[i] == 0) {   // verifica se posição está vazia
+      aux = i;    // aux recebe o indice da posição
+      break;
     }
-    // printf("~index = %d\n", i);
-    // printf("aux = %d\n", aux);
-    return i;
+    else {
+      aux += 1; // incrementa aux
+    }
   }
+  return aux;
+}
+
+int find_index_remove(){
+  int aux = -1;
+  for (int i = 0; i < N; i++) {
+    if (buffer[i] == 1) {   // verifica se posição possui dado
+      aux = i;    // aux recebe o indice da posição
+      break;
+    }
+    else {
+      aux += 1;   // incrementa aux
+    }
+  }
+  return aux;
 }
