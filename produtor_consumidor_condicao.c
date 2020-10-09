@@ -124,8 +124,8 @@ void *consumidor(void *pi) {
         pthread_cond_signal(&produtor_cond);    // como só tem 1 produtor, não há problema usar signal
       }
     pthread_mutex_unlock(&mutex);   // consumidor solta o lock do buffer
-    sleep(rand() % 3);
-    // sleep((rand() % 5) + 5);     // teste -> alternar com produtor
+    // sleep(rand() % 2);
+    sleep((rand() % 5) + 1);     // teste -> alternar com produtor
   }
   pthread_exit(0);
 }
@@ -168,12 +168,9 @@ int find_index_remove(){
   int aux = -1;
   for (int i = 0; i < N; i++) {
     if (buffer[i] == 1) {   // verifica se posição possui dado
-      aux += 1;    // aux recebe o indice da posição
+      aux = i;    // aux rece o índice da posição
       // break;
     }
-    // else {
-    //   aux += 1;   // incrementa aux
-    // }
   }
   return aux;
 }
