@@ -25,8 +25,8 @@ pthread_cond_t produtor_cond = PTHREAD_COND_INITIALIZER;
 pthread_cond_t consumidor_cond = PTHREAD_COND_INITIALIZER;
 
 int count = 0;          // contador de posições
-int index_insert = 0;   // índice do produtor
-int index_remove = 0;   // índice do consumidor
+int index_insert = -1;   // índice do produtor
+int index_remove = -1;   // índice do consumidor
 
 void main(argc, argv)
 int argc;
@@ -84,7 +84,8 @@ void *produtor(void *pi) {
         pthread_cond_wait(&produtor_cond, &mutex);  // adormece o produtor
       }
 
-      index_insert = find_index_insert();   // procurar index para inserir dado
+      index_insert = (index_insert + 1) % N;    // cálculo do índice do array circular
+      // index_insert = find_index_insert();    // procurar index para inserir dado [não circular]
       insert_data(item, index_insert);      // inserir dado do buffer
       printf("PRODUTOR está produzindo conteúdo\n");
       
@@ -111,8 +112,8 @@ void *consumidor(void *pi) {
         printf("Buffer está vazio!\n\n");
         pthread_cond_wait(&consumidor_cond, &mutex);    // adormece o produtor
       }
-
-      index_remove = find_index_remove();   // procurar index do dado a ser removido
+      index_remove = (index_remove + 1) % N;    // cálculo do índice do array circular
+      // index_remove = find_index_remove();    // procurar index do dado a ser removido [não circular]
       remove_data(index_remove);    // remover dado do buffer
       printf("CONSUMIDOR está consumindo conteúdo\n");
 
@@ -169,7 +170,7 @@ int find_index_remove(){
   for (int i = 0; i < N; i++) {
     if (buffer[i] == 1) {   // verifica se posição possui dado
       aux = i;    // aux rece o índice da posição
-      // break;
+      break;
     }
   }
   return aux;

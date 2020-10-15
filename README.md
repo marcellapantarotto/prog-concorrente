@@ -18,3 +18,6 @@ Problema dos macacos, em que os gorilas têm preferência de passagem. Resolvido
 
 5. ```produtor_consumidor.c``` <br>
 Problema clássico de produtores e consumidores de dados de um buffer compartilhado. Resolvido com locks e variáveis condicionais.
+
+6. ```canibais.c``` <br>
+Locks recursivos.
