@@ -4,23 +4,16 @@
 #include <unistd.h>
 
 #define MAXCANIBAIS 20
-// pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-// pthread_cond_t condicao = PTHREAD_COND_INITIALIZER;
 
-// typedef struct canibais
-typedef struct
-{
-    pthread_t thread;
-    pthread_cond_t condicao;
-    pthread_mutex_t lock;
-    int contador;
-} rec_mutex_t;
-
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex_canibal = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t canibal_cond = PTHREAD_COND_INITIALIZER;
+pthread_cond_t cozinheiro_cond = PTHREAD_COND_INITIALIZER;
 
 void *canibal(void*meuid);
 void *cozinheiro(int m);
 
-
+int comida = 0;   // contador
 
 void main(argc, argv)
 int argc;
@@ -39,7 +32,7 @@ char *argv[];
   
   n = atoi (argv[1]); //número de canibais
   m = atoi (argv[2]); // quantidade de porções que o cozinheiro consegue preparar por vez
-  printf("numero de canibais: %d -- quantidade de comida: %d\n", n, m);
+printf("Numero de Canibais: %d -- Quantidade de Comida: %d\n", n, m);
 
   if(n > MAXCANIBAIS){
     printf("o numero de canibais e' maior que o maximo permitido: %d\n", MAXCANIBAIS);
@@ -61,25 +54,47 @@ char *argv[];
 }
 
 void * canibal (void* pi){
-  
   while(1) {
-    //pegar uma porção de comida e acordar o cozinheiro se as porções acabaram
-     
-    printf("%d: vou comer a porcao que peguei\n", *(int *)(pi));
-    sleep(10);
+    pthread_mutex_lock(&mutex);
+      // dormir se não tiver comida
+      while (comida == 0) {
+        pthread_cond_wait(&canibal_cond, &mutex);
+      }
+      comida -= 1;    //pegar uma porção de comida
+    pthread_mutex_unlock(&mutex);
 
+    printf("Canibal %d: vou comer a porção que peguei\n", *(int *)(pi));
+    sleep(2);
+    
+    pthread_mutex_lock(&mutex);
+      // acordar o cozinheiro se as porções acabaram
+      if (comida == 0) {
+        printf("Acabou a comida! Acorda cozinheiro!\n");
+        pthread_cond_signal(&cozinheiro_cond);
+      }
+    pthread_mutex_unlock(&mutex);    
   }
-  
 }
 
 void *cozinheiro (int m){
- 
   while(1){
-     
-    //dormir enquanto tiver comida
-    printf("cozinheiro: vou cozinhar\n");
-    sleep(20);
-    //acordar os canibais
+    int porcoes = m;
+    pthread_mutex_lock(&mutex);
+      //dormir enquanto tiver comida
+      while (comida > 0) {
+        pthread_cond_wait(&cozinheiro_cond, &mutex);
+      }
+      
+      // preparando comida
+      printf("\nCozinheiro: vou preparar a comida\n");
+      comida = porcoes;
+      sleep(5);
+      
+      // acordar os canibais
+      if (comida == porcoes){
+        printf("Comida pronta! Acordem canibais!\n\n");
+        pthread_cond_broadcast(&canibal_cond);
+      }
+    pthread_mutex_unlock(&mutex);
    }
-
 }

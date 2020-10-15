@@ -95,28 +95,28 @@ char *argv[];
 void * macacoA(void * a){
     int i = *((int *) a);
     while(1){
-	sleep(rand()%(i+1));
-	pthread_mutex_lock(&mutex);
-	 if(mB > 0){
-              turno = 0;
-         }
-	 while(turno != 0 || gaQuer != 0 || gbQuer != 0 || mB > 0 || gA > 0 || gB > 0) {
-	      pthread_cond_wait(&ma_cond,&mutex);
-    	 }
+      sleep(rand()%(i+1));
+      pthread_mutex_lock(&mutex);
+      if(mB > 0){
+                  turno = 0;
+            }
+      while(turno != 0 || gaQuer != 0 || gbQuer != 0 || mB > 0 || gA > 0 || gB > 0) {
+            pthread_cond_wait(&ma_cond,&mutex);
+          }
 
-	 mA++;
-	pthread_mutex_unlock(&mutex);
-	printf("Macaco %d passado de A para B \n",i);
-	sleep(1);
-	pthread_mutex_lock(&mutex);
-	 mA--;
-         printf("Macaco %d terminou de passar de A para B; num: %d\n" ,i,mA);
-	 if(mA == 0){
-         	pthread_cond_broadcast(&mb_cond);
-         	pthread_cond_signal(&ga_cond);
-         	pthread_cond_signal(&gb_cond);
-	 }
-        pthread_mutex_unlock(&mutex);
+      mA++;
+      pthread_mutex_unlock(&mutex);
+      printf("Macaco %d passado de A para B \n",i);
+      sleep(1);
+      pthread_mutex_lock(&mutex);
+      mA--;
+            printf("Macaco %d terminou de passar de A para B; num: %d\n" ,i,mA);
+      if(mA == 0){
+              pthread_cond_broadcast(&mb_cond);
+              pthread_cond_signal(&ga_cond);
+              pthread_cond_signal(&gb_cond);
+      }
+      pthread_mutex_unlock(&mutex);
     }
     pthread_exit(0);
 }
@@ -124,28 +124,28 @@ void * macacoA(void * a){
 void * macacoB(void * a){
     int i = *((int *) a);
     while(1){
-	 sleep(rand()%(i+1));
-	 pthread_mutex_lock(&mutex);
+      sleep(rand()%(i+1));
+      pthread_mutex_lock(&mutex);
           if(mA > 0){
-             turno = 1;
+            turno = 1;
           }
-	  while(turno != 1 || gaQuer != 0 || gbQuer != 0 || mA > 0 || gA > 0 || gB > 0) {
-	      pthread_cond_wait(&mb_cond,&mutex);
-    	  }
+          while(turno != 1 || gaQuer != 0 || gbQuer != 0 || mA > 0 || gA > 0 || gB > 0) {
+              pthread_cond_wait(&mb_cond,&mutex);
+              }
 
-	  mB++;
-	pthread_mutex_unlock(&mutex);
-	printf("Macaco %d passado de B para A \n",i);
-	sleep(1);
-	pthread_mutex_lock(&mutex);
-	 mB--;
-         printf("Macaco %d terminou de passar de B para A; num: %d\n" ,i,mB);
-	 if(mB == 0){
-           pthread_cond_broadcast(&ma_cond);
-           pthread_cond_signal(&ga_cond);
-           pthread_cond_signal(&gb_cond);
-         }
+          mB++;
         pthread_mutex_unlock(&mutex);
+        printf("Macaco %d passado de B para A \n",i);
+        sleep(1);
+        pthread_mutex_lock(&mutex);
+        mB--;
+              printf("Macaco %d terminou de passar de B para A; num: %d\n" ,i,mB);
+        if(mB == 0){
+          pthread_cond_broadcast(&ma_cond);
+          pthread_cond_signal(&ga_cond);
+          pthread_cond_signal(&gb_cond);
+        }
+       pthread_mutex_unlock(&mutex);
     }
     pthread_exit(0);
 }

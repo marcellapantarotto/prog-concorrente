@@ -15,8 +15,6 @@ void print_buffer();
 int produce_item();
 void insert_data(int data, int i);
 void remove_data(long int i);
-int find_index_insert();
-int find_index_remove();
 
 int buffer[N] = {0};    // declarando e inicializando o vetor do buffer com 0 em todas as posições
 
@@ -85,7 +83,6 @@ void *produtor(void *pi) {
       }
 
       index_insert = (index_insert + 1) % N;    // cálculo do índice do array circular
-      // index_insert = find_index_insert();    // procurar index para inserir dado [não circular]
       insert_data(item, index_insert);      // inserir dado do buffer
       printf("PRODUTOR está produzindo conteúdo\n");
       
@@ -113,7 +110,6 @@ void *consumidor(void *pi) {
         pthread_cond_wait(&consumidor_cond, &mutex);    // adormece o produtor
       }
       index_remove = (index_remove + 1) % N;    // cálculo do índice do array circular
-      // index_remove = find_index_remove();    // procurar index do dado a ser removido [não circular]
       remove_data(index_remove);    // remover dado do buffer
       printf("CONSUMIDOR está consumindo conteúdo\n");
 
@@ -149,29 +145,4 @@ void insert_data(int data, int index){
 
 void remove_data(long int index){
   buffer[index] = 0;
-}
-
-int find_index_insert(){
-  int aux = -1;
-  for (int i = 0; i < N; i++) {
-    if (buffer[i] == 0) {   // verifica se posição está vazia
-      aux = i;    // aux recebe o indice da posição
-      break;
-    }
-    else {
-      aux += 1; // incrementa aux
-    }
-  }
-  return aux;
-}
-
-int find_index_remove(){
-  int aux = -1;
-  for (int i = 0; i < N; i++) {
-    if (buffer[i] == 1) {   // verifica se posição possui dado
-      aux = i;    // aux rece o índice da posição
-      break;
-    }
-  }
-  return aux;
 }
