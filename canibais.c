@@ -1,3 +1,5 @@
+// Marcella Pantarotto (13/0143880)
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -50,29 +52,22 @@ printf("Numero de Canibais: %d -- Quantidade de Comida: %d\n", n, m);
     }
   }
 
-  cozinheiro(m);
+  cozinheiro(m); 
 }
 
 void * canibal (void* pi){
   while(1) {
-    pthread_mutex_lock(&mutex);
-      // dormir se não tiver comida
-      while (comida == 0) {
-        pthread_cond_wait(&canibal_cond, &mutex);
+    pthread_mutex_lock(&mutex);     // canibal pega o lock
+      while (comida == 0) {         // se não tiver comida
+        printf("Acabou a comida! Acorda cozinheiro!\n");
+        pthread_cond_signal(&cozinheiro_cond);    // acorda primeiro o cozinheiro para não acontecer que todos os canibais durmam e não ter ninguém para acordá-lo
+        pthread_cond_wait(&canibal_cond, &mutex); // adormece canibal
       }
-      comida -= 1;    //pegar uma porção de comida
-    pthread_mutex_unlock(&mutex);
+      comida--;    //pegar uma porção de comida
+    pthread_mutex_unlock(&mutex);   // canibal solta o lock
 
     printf("Canibal %d: vou comer a porção que peguei\n", *(int *)(pi));
     sleep(2);
-    
-    pthread_mutex_lock(&mutex);
-      // acordar o cozinheiro se as porções acabaram
-      if (comida == 0) {
-        printf("Acabou a comida! Acorda cozinheiro!\n");
-        pthread_cond_signal(&cozinheiro_cond);
-      }
-    pthread_mutex_unlock(&mutex);    
   }
 }
 
@@ -80,10 +75,9 @@ void *cozinheiro (int m){
   while(1){
     int porcoes = m;
     pthread_mutex_lock(&mutex);
-      //dormir enquanto tiver comida
-      while (comida > 0) {
-        pthread_cond_wait(&cozinheiro_cond, &mutex);
-      }
+      
+      while (comida > 0)    // enquanto tiver comida
+        pthread_cond_wait(&cozinheiro_cond, &mutex);   // adormece cozinheiro
       
       // preparando comida
       printf("\nCozinheiro: vou preparar a comida\n");

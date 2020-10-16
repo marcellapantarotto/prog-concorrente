@@ -2,6 +2,10 @@
 
 Estudos dirigidos e atividades da disciplina de Programação Concorrente da Universidade de Brasília (UnB)
 
+Para compilar qualquer dos programas abaixo, utilizar o seguinte comando: <br>
+```gcc -pthread programa.c -o programa``` <br>
+Para executar: ```./programa```
+
 #### ORDEM:
 
 1. ```tarefa3.c``` <br>
@@ -20,4 +24,6 @@ Problema dos macacos, em que os gorilas têm preferência de passagem. Resolvido
 Problema clássico de produtores e consumidores de dados de um buffer compartilhado. Resolvido com locks e variáveis condicionais.
 
 6. ```canibais.c``` <br>
-Locks recursivos.
+Canibais competindo por porções de comida e um cozinheiro que utiliza a região crítica para cozinha e só a libera após terminar todas as porções, problema resolvido com locks recursivos. <br>
+Para executar: <br>
+```./canibais numero_canibais numero_porções```
