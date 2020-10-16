@@ -1,3 +1,10 @@
+/*
+Este problema é uma abstração do acesso à base de dados, onde não existe o perigo em termos diversos processos lendo concorrentemente (leitores), mas escrevendo ou 
+mudando os dados (escritores) deve ser feito sob exclusão mútua para garantir consistência. Leitores e escritores é uma família de modelos de controle de concorrência 
+em que leitores (entes que não alteram conteúdo) pode acessar concorrentemente os recursos (por exemplo, um banco de dados) e escritores (entes que alteram conteúdo) 
+requerem acesso exclusivo. Usando como base o código disponibilizado neste tópico, resolva o problema de starvation dos escritores.
+*/
+
 #include "stdio.h"
 #include "unistd.h"
 #include "stdlib.h"

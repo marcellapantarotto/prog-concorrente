@@ -24,6 +24,6 @@ Problema dos macacos, em que os gorilas têm preferência de passagem. Resolvido
 Problema clássico de produtores e consumidores de dados de um buffer compartilhado. Resolvido com locks e variáveis condicionais.
 
 6. ```canibais.c``` <br>
-Canibais competindo por porções de comida e um cozinheiro que utiliza a região crítica para cozinha e só a libera após terminar todas as porções, problema resolvido com locks recursivos. <br>
+Canibais competindo por porções de comida e um cozinheiro que utiliza a região crítica para cozinha e só a libera após terminar todas as porções, problema resolvido com locks e variáveis condicionais. <br>
 Para executar: <br>
 ```./canibais numero_canibais numero_porções```

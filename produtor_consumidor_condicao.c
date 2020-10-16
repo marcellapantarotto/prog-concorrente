@@ -1,5 +1,12 @@
 // Marcella Pantarotto (13/0143880)
 
+/*
+O problema do produtor e consumidor (também conhecido como o problema do buffer limitado), consiste em um conjunto de processos que compartilham um mesmo buffer.
+Os processos chamados produtores põem informação no buffer. Os processos chamados consumidores retiram informação deste buffer. Quando o buffer estiver cheio, os
+produtores devem aguardar por posições disponíveis para inserir os dados produzidos. Da mesma forma, quando o buffer estiver vazio os consumidores devem aguardar
+por dados para serem consumidos.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>

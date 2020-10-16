@@ -1,3 +1,11 @@
+/*
+Suponha que há macacos em dois morros A e B, ligados por uma ponte de corda. De tempos em tempos os macacos decidem passar para o outro morro à procura de comida.
+Esta passagem é feita através da ponte de corda. Mais de um macaco pode atravessar a ponte ao mesmo tempo, mas isso só é possível se eles estiverem indo na mesma direção.
+Implemente um programa que faça o controle da passagem de macacos pela ponte usando locks.
+DESAFIO: Após testar o programa acima, crie agora uma nova verão do programa adicionando dois gorilas, um em cada morro.
+Como os gorilas são muito pesados, eles só poderão atravessar a ponte sozinhos.
+*/
+
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
