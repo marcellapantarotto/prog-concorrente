@@ -1,5 +1,12 @@
 // Marcella Pantarotto (13/0143880)
 
+/*
+Uma tribo de N canibais selvagens está jantando os missionários capturados. Eles ficam ao redor de um grande caldeirão contendo X porções de ensopado de missionário cozido.
+Quando um selvagem tem fome, ele se serve no caldeirão (pega 1 porção), a menos que esteja vazio (neste caso, o canibal deve aguardar/dormir até que o cozinheiro forneça mais porções).
+Quando um canibal pegar a última porção, o mesmo deve acordar o cozinheiro para que ele prepare mais X porções de ensopado e encha o caldeirão.
+Após encher a tigela, o cozinheiro acorda os canibais selvagens que estavam esperando o ensopado ficar pronto e volta a dormir.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
