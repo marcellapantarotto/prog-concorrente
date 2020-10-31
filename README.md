@@ -27,3 +27,9 @@ Problema clássico de produtores e consumidores de dados de um buffer compartilh
 Canibais competindo por porções de comida e um cozinheiro que utiliza a região crítica para cozinha e só a libera após terminar todas as porções, problema resolvido com locks e variáveis condicionais. <br>
 Para executar: <br>
 ```./canibais numero_canibais numero_porções```
+
+7. ```pistF1.c``` <br>
+Estudo de semáforos com um problema de carros de diferentes equipes que treinam numa pista compartilhada e não podem haver 2 carros da mesma equipa na pista ao mesmo tempo.
+
+8. ```produtore_consumidore_semaforo.c``` <br>
+Problema clássico de produtores e consumidores de dados de um buffer compartilhado. Resolvido com semáforos.
