@@ -33,3 +33,6 @@ Estudo de semáforos com um problema de carros de diferentes equipes que treinam
 
 8. ```produtore_consumidore_semaforo.c``` <br>
 Problema clássico de produtores e consumidores de dados de um buffer compartilhado. Resolvido com semáforos.
+
+9. ```barbeiro.c``` <br>
+Problema do barbeiro dorminhoco, resolvido com semáforos e lock.
