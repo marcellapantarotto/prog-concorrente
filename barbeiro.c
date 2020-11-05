@@ -53,7 +53,7 @@ void* f_cliente(void* v) {
     sem_wait(&sem_corte_feito);
     //... liberar a cadeira do barbeiro - lock (só tem 1 cadeiro)
     pthread_mutex_unlock(&mux_cadeira_corte);
-    sleep(3);
+    sleep(4);
     printf("Cliente %d cortou o cabelo e foi embora \n",id);
 
   }else{//barbearia cheia
