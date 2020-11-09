@@ -36,3 +36,6 @@ Problema clássico de produtores e consumidores de dados de um buffer compartilh
 
 9. ```barbeiro.c``` <br>
 Problema do barbeiro dorminhoco, resolvido com semáforos e lock.
+
+10. ```filosofos.c``` <br>
+Problema clássico do jantar dos filósofos.
