@@ -38,4 +38,4 @@ Problema clássico de produtores e consumidores de dados de um buffer compartilh
 Problema do barbeiro dorminhoco, resolvido com semáforos e lock.
 
 10. ```filosofos.c``` <br>
-Problema clássico do jantar dos filósofos.
+Problema clássico do jantar dos filósofos, resolvido com semáforos.
