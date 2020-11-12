@@ -36,7 +36,7 @@ int main () {
 	int *id;
 	//semaforo 
 	for (i=0; i<N; i++) {
-		sem_init(&s[i], 0, 0);		// inicialização semáforo
+		sem_init(&s[i], 0, 0);		// inicialização semáforo, filosofo incrementa semáforo quando pega o talher
 	}
 	pthread_t r[N]; 
 
