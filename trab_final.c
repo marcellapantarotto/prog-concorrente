@@ -5,36 +5,38 @@
 #include <time.h>
 #include <semaphore.h>
 
-#define N 3             // quantidade de grupos e de elementos no grupo
-#define MAXLEITE 50     // quantidade de leite produzido pela vaca
-#define MAXVENDEDOR 1   // quantidade de vendedores de quijo
+#define N 3     // quantidade de grupos e de elementos no grupo
+#define L 30    // quantidade de leite produzido pela vaca
+#define V 1     // quantidade de vendedores de quijo
+#define F 1     // quantidade de fazendeiros
+#define LQ 15   // quantidade de leite necessário para fazer 1 queijo
 
 int leite[N] = {0};    // array para contar de leite cada vaca
-int bQuer = 0;      // bezerro quer
+int bQuer = 0;         // variável para indicar a preferência do bezerro
 
-pthread_t vacas[N];         // threads de vacas
-pthread_t bezerros[N];      // threads de bezerros
-pthread_t funcionarios[N];  // threads de funcionários
-pthread_t vendedor[MAXVENDEDOR];         // thread do vendedor
+pthread_t vacas[N];            // threads de vacas
+pthread_t bezerros[N];         // threads de bezerros
+pthread_t funcionarios[N];     // threads de funcionários
+pthread_t vendedor[V];         // thread do vendedor
 
 pthread_cond_t vaca_cond = PTHREAD_COND_INITIALIZER;
 pthread_cond_t bezerro_cond = PTHREAD_COND_INITIALIZER;
 pthread_cond_t funcionario_cond = PTHREAD_COND_INITIALIZER;
 
 pthread_mutex_t ubere = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t fabrica_quiejos = PTHREAD_MUTEX_INITIALIZER;
 
-sem_t queijo;
+sem_t queijos;
 
 void *vaca(void *arg);
 void *bezerro(void *arg);
 void *funcionario(void *arg);
-void *loja(void *arg);
+void *venda(void *arg);
 
 int main(int argc, char**argv) {
     int i;
     int *id;
-    // srand48(time(NULL));
+    
+    sem_init(&queijos, 0, 0);        // semáforo de queijos
 
     // criando threads de vacas
     for (i = 0; i < N; i++) {
@@ -57,20 +59,19 @@ int main(int argc, char**argv) {
         pthread_create(&funcionarios[i], NULL, funcionario, (void *)(id));
     }
 
-    sem_init(&queijo, 0, 0);        // semáforo de queijos
-    // criando threads de vendedores
-    for (i = 0; i < MAXVENDEDOR; i++) {
+    // criando threads do vendedor
+    for (i = 0; i < V; i++) {
         id = (int *) malloc(sizeof(int));
         *id = i;
-        pthread_create(&vendedor[i], NULL, loja, (void *)(id));
+        pthread_create(&vendedor[i], NULL, venda, (void *)(id));
     }
 
     pthread_join(vacas[0], NULL);
-    pthread_join(bezerros[0], NULL);
-    pthread_join(funcionarios[0], NULL);
-    pthread_join(vendedor[0], NULL);
+    // pthread_join(bezerros[0], NULL);
+    // pthread_join(funcionarios[0], NULL);
+    // pthread_join(vendedor[0], NULL);
 
-    sem_destroy(&queijo);       // destuíndo semáforo de queijos
+    sem_destroy(&queijos);       // destuíndo semáforo de queijos
     return 0;
 }
 
@@ -80,21 +81,17 @@ void *vaca(void *arg) {
     printf("\tGrupo %d - Vaca %d criada\n", grupo, id);
 
     while(1) {
-        sleep(drand48()*3);
-
         pthread_mutex_lock(&ubere);
             while(leite[grupo] > 5) {      // enquanto houver leite
                 pthread_cond_wait(&vaca_cond, &ubere);  // adormece vaca
             }
-            leite[grupo] = MAXLEITE;
             printf("-- Vaca %d pastando\n", id);
+            leite[grupo] = L;
             sleep(2);
 
-            if (leite[grupo] == MAXLEITE) {
-                printf("Grupo %d - Vaca %d terminou de pastar\t\tleite remanente no grupo: %d\n", grupo, id, leite[grupo]);
-                pthread_cond_signal(&bezerro_cond);
-                pthread_cond_signal(&funcionario_cond);
-            }
+            printf("Grupo %d - Vaca %d terminou de pastar\t\t\tTotal de leite no grupo: %d\n", grupo, id, leite[grupo]);
+            pthread_cond_signal(&bezerro_cond);
+            pthread_cond_signal(&funcionario_cond);
         pthread_mutex_unlock(&ubere);
     }
 }
@@ -106,21 +103,19 @@ void *bezerro(void *arg) {
     printf("\tGrupo %d - Bezerro %d criado \n", grupo, id);
 
     while(1) {
-        sleep(drand48()*3);
-
+        sleep(5+rand()%5);
         pthread_mutex_lock(&ubere);
             bQuer++;
-            while(leite[grupo] < 10) {
-                printf("\tNão há leite suficiente! Bezerro %d quer mamar!\n", id);
+            while(leite[grupo] < 10) {   
                 pthread_cond_signal(&vaca_cond);            // acorda vaca
                 pthread_cond_wait(&bezerro_cond, &ubere);   // adormece bezerro
+                printf("\tNão há leite suficiente! Bezerro %d quer mamar!\n", id);
             }
             bQuer--;
             leite[grupo] = leite[grupo] - 10;
             leite_bebido = leite_bebido + 10;
-            printf("Grupo %d - Bezerro %d acabou de mamar\t\tleite remanente no grupo: %d\ttotal de leite bebido: %d\n", grupo,id, leite[grupo], leite_bebido);
+            printf("Grupo %d - Bezerro %d acabou de mamar\t\t\tLeite remanescente no grupo: %d\t\tTotal de leite bebido: %d\n", grupo,id, leite[grupo], leite_bebido);
         pthread_mutex_unlock(&ubere);
-        sleep(3);
     }
 }
 
@@ -132,42 +127,38 @@ void *funcionario(void *arg) {
     printf("\tGrupo %d - Funcionario %d criado \n", grupo, id);
 
     while(1) {
-        sleep(drand48()*3);
+        sleep(rand()%3);
         pthread_mutex_lock(&ubere);
-            while(leite[grupo] < 5 || bQuer > 0) {
-                printf("\tNão há leite suficiente! Funcionario %d precisa ordenhar!\n", id);
+            while(leite[grupo] < 5 || bQuer > 0 ) {
                 pthread_cond_signal(&vaca_cond);            // acorda vaca
                 pthread_cond_wait(&funcionario_cond, &ubere);   // adormece bezerro
+                printf("\tNão há leite suficiente! Funcionário %d precisa ordenhar!\n", id);
             }
 
             leite[grupo] = leite[grupo] - 5;
             leite_retirado = leite_retirado + 5;
-            printf("Grupo %d - Funcionário %d acabou de ordenhar\tleite remanente no grupo: %d\ttotal de leite retirado: %d\n", grupo, id, leite[grupo], leite_retirado);
+            printf("Grupo %d - Funcionário %d acabou de ordenhar\t\tLeite remanescente no grupo: %d\t\tTotal de leite retirado: %d\n", grupo, id, leite[grupo], leite_retirado);
         pthread_mutex_unlock(&ubere);
-        sleep(1);
 
-        while (leite_retirado >= 20) {
-            // pthread_mutex_lock(&fabrica_quiejos);
-            sem_post(&queijo);
-            sem_getvalue(&queijo, &value);
-            leite_retirado = leite_retirado - 20;
-            printf("Grupo %d - FAZENDO QUEIJO!\tleite remanente no grupo: %d\ttotal de quejo: %d\n", grupo, leite[grupo], value);
-            // pthread_mutex_unlock(&fabrica_quiejos);
+        while (leite_retirado >= LQ) {
+            sem_post(&queijos);
+            leite_retirado = leite_retirado - LQ;
+            sem_getvalue(&queijos, &value);
+            printf("* Grupo %d - Fazendo QUEIJO!\t\t\t\tLeite remanescente no grupo: %d\t\tTotal de queijo: %d\n", grupo, leite[grupo], value);
         }
     }
 }
 
-void *loja(void *arg) {
+void *venda(void *arg) {
     int queijos_vendidos = 0;
     int value = 0;
+    printf("\tVendedor criado! \n");
 
     while(1) {
-        sem_wait(&queijo);
-        sem_getvalue(&queijo, &value);
-
-        // pthread_mutex_lock(&fabrica_quiejos);
+        sleep(10+rand()%5);
+        sem_wait(&queijos);
         queijos_vendidos++;
-        printf("** Venda feita! Total de queijos vendidos: %d, queijo remanente: %d\n", queijos_vendidos, value);
-        // pthread_mutex_unlock(&fabrica_quiejos);
+        sem_getvalue(&queijos, &value);
+        printf("** VENDA FEITA!\t\t\t\t\t\tQueijos remanescentes: %d\t\tTotal de queijos vendidos: %d\n", value, queijos_vendidos);
     }
 }

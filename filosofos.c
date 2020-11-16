@@ -7,6 +7,8 @@ thinking and becomes hungry. When the philosopher becomes hungry, he/she cannot 
 When the philosopher is done eating he/she puts down the chopsticks and begins thinking again.
 */
 
+// https://web.archive.org/web/20131208203319/http://web.eecs.utk.edu/~plank/plank/classes/cs560/560/notes/Dphil/lecture.html
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
