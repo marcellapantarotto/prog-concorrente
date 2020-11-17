@@ -21,6 +21,7 @@ do pombo e volta a escrever uma nova carta. Caso o pombo tenha partido, ele deve
 #define CARTAS 20 //quantidade de cartas na mochila
 
 int local = 0;
+int qnt_cartas = 0;
 
 pthread_cond_t usuario_cond = PTHREAD_COND_INITIALIZER;
 pthread_cond_t pombo_cond = PTHREAD_COND_INITIALIZER;
@@ -31,14 +32,19 @@ void * f_usuario(void *arg);
 void * f_pombo(void *arg);
 
 int main(int argc, char **argv){
-    int i;
+    int i, erro;
+    int *id;
 
     pthread_t usuario[N];
-    int *id;
     for(i = 0; i < N; i++){
-         id = (int *) malloc(sizeof(int));
-          *id = i;
-	pthread_create(&(usuario[i]),NULL,f_usuario,  (void *) (id));
+        id = (int *) malloc(sizeof(int));
+        *id = i;
+	    erro = pthread_create(&(usuario[i]),NULL,f_usuario,  (void *) (id));
+
+        if(erro) {
+            printf("ERRO na criacao da thread %d\n", i);
+            exit(1);
+        }
     }
 
     pthread_t pombo;
@@ -56,7 +62,30 @@ void * f_pombo(void *arg){
     while(1){
         //Inicialmente está em A, aguardar/dorme a mochila ficar cheia (20 cartas)
         //Leva as cartas para B e volta para A
-        //Acordar os usuários   
+        //Acordar os usuários  
+        
+        pthread_mutex_lock(&mochila);
+            while (qnt_cartas < CARTAS) {
+                pthread_cond_wait(&pombo_cond, &mochila);
+                printf("Mochila ainda não está cheia, pombo não pode sair\n");
+            }
+            
+            printf("Mochila está cheia! Pombo irá viajar!\n");            
+            local = B;
+            sleep(2+rand()%2);
+
+            printf("Pombo chegou ao local B e irá esvaziar a mochila!\n");
+            qnt_cartas = 0;
+            sleep(2);
+            
+            printf("Pombo voltou para o local A!\n");
+            local = A;
+            sleep(3);
+
+            if (local == A)
+                pthread_cond_broadcast(&usuario_cond);
+
+        pthread_mutex_unlock(&mochila);
     }
 }
 
@@ -68,5 +97,25 @@ void * f_usuario(void *arg){
         //Caso o pombo não esteja em A ou a mochila estiver cheia, então dorme	
         //Posta sua carta na mochila do pombo
         //Caso a mochila fique cheia, acorda o ṕombo
+
+        
+        pthread_mutex_lock(&mochila);
+        // printf("\tid = %d\n", id);
+            while (local != A || qnt_cartas == CARTAS) {
+                pthread_cond_signal(&pombo_cond);
+                pthread_cond_wait(&usuario_cond, &mochila);
+                
+                if (local != A)
+                    printf("Pombo não estão no local A!\tUsuário %d não pode escrever\n", id);
+                if (qnt_cartas == CARTAS)
+                    printf("Mochila do pombo está cheia!\tUsuário %d não pode escrever\n", id);
+            }
+
+            qnt_cartas++;
+        pthread_mutex_unlock(&mochila);
+       
+        printf("Usuário %d acabou de escrever uma carta\t\t Qnt de cartas: %d\n", id, qnt_cartas);
+        sleep(2);
+        
     }
 }
