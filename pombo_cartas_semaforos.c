@@ -15,28 +15,29 @@ do pombo e volta a escrever uma nova carta. Caso o pombo tenha partido, ele deve
 #include "unistd.h"
 
 #define N 10 //número de usuários
-#define A 0
-#define B 1
-
 #define CARTAS 20 //quantidade de cartas na mochila
 
-int local = 0;
+int qnt_cartas = 0; // contador de cartas
 
-sem_t sem_cartas;
-sem_t sem_pombo;    // o 20o usuário dá um push no pombo pra ele fazer a viagem
-// 21o usuário fica dormindo, esperando o pombo voltar
+sem_t sem_pombo;    // o 20o usuário dá um push no pombo pra ele fazer a viagem, 21o usuário fica dormindo, esperando o pombo voltar
+sem_t sem_cartas;   // contador de cartas
+sem_t sem_mochila;  // sinalização que mochila está cheia
 
 void * f_usuario(void *arg);
 void * f_pombo(void *arg);
 
 int main(int argc, char **argv){
     int i;
+    int *id;
+
+    sem_init(&sem_pombo, 0, 1); // inicializando semáforo do pombo com 1 permissão, pq tem 1 pombo
+	sem_init(&sem_mochila, 0, 0); // inicializando semáforo da mochila vazio, quando num permissões == CARTAS, pombo pode voar
+	sem_init(&sem_cartas, 0, CARTAS);
 
     pthread_t usuario[N];
-    int *id;
     for(i = 0; i < N; i++){
-         id = (int *) malloc(sizeof(int));
-          *id = i;
+        id = (int *) malloc(sizeof(int));
+        *id = i;
 	pthread_create(&(usuario[i]),NULL,f_usuario,  (void *) (id));
     }
 
@@ -51,21 +52,42 @@ int main(int argc, char **argv){
 
 
 void * f_pombo(void *arg){
-  
+    int value;
+
     while(1){
-        //Inicialmente está em A, aguardar/dorme a mochila ficar cheia (20 cartas)
-        //Leva as cartas para B e volta para A
-        //Acordar os usuários   
+        sem_wait(&sem_mochila); // pombo pega a permissão da mochila para levar as cartas
+        sem_wait(&sem_pombo);   // pombo pega permissão para voar
+        printf("Mochila está cheia e pombo está viajando!\n");
+        sleep(1); // tempo de vôo
+
+        printf("Pombo chegou ao local B e irá esvaziar a mochila!\n");
+        for (int i = 0; i < CARTAS; i++) {
+            sem_post(&sem_cartas); // devolve ao semáforo as permissões das cartas
+            qnt_cartas--; // decrementa contador de cartas
+        }
+        sleep(1); // tempo de vôo
+
+        printf("Pombo voltou para o local A!\n");
+        sem_post(&sem_pombo); // devolve permissão para  voar
+
     }
+    pthread_exit(0);
 }
 
 void * f_usuario(void *arg){
-    int id = *((int *) arg);    // id do usuário
+    int id = *((int *) arg); // id do usuário
 
     while(1){
-	    //Escreve uma carta
-        //Caso o pombo não esteja em A ou a mochila estiver cheia, então dorme	
-        //Posta sua carta na mochila do pombo
-        //Caso a mochila fique cheia, acorda o ṕombo
+        // printf("Usuário %d irá de escrever uma carta\n", id);
+	    sem_wait(&sem_cartas); // pega permissão de 1 carta
+        sem_wait(&sem_pombo);  // pega a permissão do pombo, para que ele não possa voar
+        qnt_cartas++; // incrementa contador de cartas
+
+        printf("Usuário %d acabou de escrever uma carta\t\t Qnt de cartas: %d\n", id, qnt_cartas);
+        sleep(1);
+
+        if (qnt_cartas == CARTAS) sem_post(&sem_mochila); // devolve permissão da mochila para pombo poder levar as cartas
+        sem_post(&sem_pombo); // devolve permissão do pombo para que ele possa voar
     }
+    pthread_exit(0);
 }

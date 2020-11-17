@@ -76,11 +76,11 @@ void * f_pombo(void *arg){
 
             printf("Pombo chegou ao local B e irá esvaziar a mochila!\n");
             qnt_cartas = 0;
-            sleep(2);
+            sleep(1+rand()%2);
             
             printf("Pombo voltou para o local A!\n");
             local = A;
-            sleep(3);
+            sleep(2+rand()%2);
 
             if (local == A)
                 pthread_cond_broadcast(&usuario_cond);
@@ -100,7 +100,6 @@ void * f_usuario(void *arg){
 
         
         pthread_mutex_lock(&mochila);
-        // printf("\tid = %d\n", id);
             while (local != A || qnt_cartas == CARTAS) {
                 pthread_cond_signal(&pombo_cond);
                 pthread_cond_wait(&usuario_cond, &mochila);
