@@ -1,3 +1,5 @@
+// Marcella Pantarotto (13/014880)
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
@@ -81,19 +83,20 @@ void *vaca(void *arg) {
     printf("\tGrupo %d - Vaca %d criada\n", grupo, id);
 
     while(1) {
-        pthread_mutex_lock(&ubere);
+        pthread_mutex_lock(&ubere); // vaca  pega lock do úbere
             while(leite[grupo] > 5) {      // enquanto houver leite
                 pthread_cond_wait(&vaca_cond, &ubere);  // adormece vaca
             }
             printf("-- Vaca %d pastando\n", id);
-            leite[grupo] = L;
+            leite[grupo] = L;   // enche quantidade de leite do grupo
             sleep(2);
 
             printf("Grupo %d - Vaca %d terminou de pastar\t\t\tTotal de leite no grupo: %d\n", grupo, id, leite[grupo]);
-            pthread_cond_signal(&bezerro_cond);
-            pthread_cond_signal(&funcionario_cond);
-        pthread_mutex_unlock(&ubere);
+            pthread_cond_signal(&bezerro_cond); // acorda bezerro 
+            pthread_cond_signal(&funcionario_cond); // acorda funcionário
+        pthread_mutex_unlock(&ubere);   // vaca solta lock do úbere
     }
+    pthread_exit(0);
 }
 
 void *bezerro(void *arg) {
@@ -104,19 +107,20 @@ void *bezerro(void *arg) {
 
     while(1) {
         sleep(5+rand()%5);
-        pthread_mutex_lock(&ubere);
-            bQuer++;
-            while(leite[grupo] < 10) {   
+        pthread_mutex_lock(&ubere); // bezerro pega lock do úbere
+            bQuer++;    // incrementa variável para indicar que o bezerro quer mamar
+            while(leite[grupo] < 10) {  // enquanto qnt de leite do grupo for menor que a qnt que o bezerro bebe 
                 pthread_cond_signal(&vaca_cond);            // acorda vaca
                 pthread_cond_wait(&bezerro_cond, &ubere);   // adormece bezerro
                 printf("\tNão há leite suficiente! Bezerro %d quer mamar!\n", id);
             }
-            bQuer--;
-            leite[grupo] = leite[grupo] - 10;
-            leite_bebido = leite_bebido + 10;
+            bQuer--;    // decrementa variável para indicar que o bezerro quer mamar
+            leite[grupo] = leite[grupo] - 10;   // decrementa quantidade de leite do grupo
+            leite_bebido = leite_bebido + 10;   // incrementa a quantidade total de leite bebido
             printf("Grupo %d - Bezerro %d acabou de mamar\t\t\tLeite remanescente no grupo: %d\t\tTotal de leite bebido: %d\n", grupo,id, leite[grupo], leite_bebido);
-        pthread_mutex_unlock(&ubere);
+        pthread_mutex_unlock(&ubere);   // bezerro solta o lock do úbere
     }
+    pthread_exit(0);
 }
 
 void *funcionario(void *arg) {
@@ -128,37 +132,40 @@ void *funcionario(void *arg) {
 
     while(1) {
         sleep(rand()%3);
-        pthread_mutex_lock(&ubere);
-            while(leite[grupo] < 5 || bQuer > 0 ) {
+        pthread_mutex_lock(&ubere); // funcionário pega lock do úbere
+            while(leite[grupo] < 5 || bQuer > 0 ) { // enquanto qnt de leite for insuficiente ou bezerro quiser beber
                 pthread_cond_signal(&vaca_cond);            // acorda vaca
                 pthread_cond_wait(&funcionario_cond, &ubere);   // adormece bezerro
-                printf("\tNão há leite suficiente! Funcionário %d precisa ordenhar!\n", id);
+                if (leite[grupo] < 5) printf("\tNão há leite suficiente! Funcionário %d precisa ordenhar!\n", id);
+                if (bQuer > 0) printf("\tBezerro %d quer mamar! Funcionário %d terá que esperar!\n", id, id);
             }
 
-            leite[grupo] = leite[grupo] - 5;
-            leite_retirado = leite_retirado + 5;
+            leite[grupo] = leite[grupo] - 5;   // decrementa quantidade de leite do grupo
+            leite_retirado = leite_retirado + 5;   // incrementa a quantidade total de leite retirado
             printf("Grupo %d - Funcionário %d acabou de ordenhar\t\tLeite remanescente no grupo: %d\t\tTotal de leite retirado: %d\n", grupo, id, leite[grupo], leite_retirado);
-        pthread_mutex_unlock(&ubere);
+        pthread_mutex_unlock(&ubere); // funcionário solta lock do úbere
 
-        while (leite_retirado >= LQ) {
-            sem_post(&queijos);
-            leite_retirado = leite_retirado - LQ;
-            sem_getvalue(&queijos, &value);
+        while (leite_retirado >= LQ) {  // enquanto tiver leite retirado suficiente para fazer queijo
+            sem_post(&queijos); // incrementa semáforo de queijos
+            leite_retirado = leite_retirado - LQ;   // decrementa quantidade de leite retirado
+            sem_getvalue(&queijos, &value); // pega valor do semáforo para saber quantos queijos existem
             printf("* Grupo %d - Fazendo QUEIJO!\t\t\t\tLeite remanescente no grupo: %d\t\tTotal de queijo: %d\n", grupo, leite[grupo], value);
         }
     }
+    pthread_exit(0);
 }
 
 void *venda(void *arg) {
-    int queijos_vendidos = 0;
+    int queijos_vendidos = 0;   // contador de queijos vendidos
     int value = 0;
     printf("\tVendedor criado! \n");
 
     while(1) {
-        sleep(10+rand()%5);
-        sem_wait(&queijos);
-        queijos_vendidos++;
-        sem_getvalue(&queijos, &value);
+        sleep(2+rand()%5);
+        sem_wait(&queijos); // decrementa semáforo de queijo
+        queijos_vendidos++; // incrementa contador de queijos vendidos
+        sem_getvalue(&queijos, &value); // pega valor do semáforo para saber quantos queijos existem
         printf("** VENDA FEITA!\t\t\t\t\t\tQueijos remanescentes: %d\t\tTotal de queijos vendidos: %d\n", value, queijos_vendidos);
     }
+    pthread_exit(0);
 }
