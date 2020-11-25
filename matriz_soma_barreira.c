@@ -1,3 +1,5 @@
+// Marcella Pantarotto (13/0143880)
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -8,8 +10,6 @@ pthread_barrier_t barrier;
 int size;
 
 int matrix1[MAXSIZE][MAXSIZE];
-int matrix2[MAXSIZE][MAXSIZE];
-int matrixR[MAXSIZE][MAXSIZE];
 
 void *Worker(void *);
 
@@ -23,21 +23,14 @@ int main(int argc, char *argv[]) {
         return 0;	
     }
 
-    pthread_t workerid[size];
+    pthread_t workerid[size];   // criar 1 thread pro linha
 
     pthread_barrier_init(&barrier, NULL, size);
 
+    // populando matriz
     for (i = 0; i < size; i++)
         for (j = 0; j < size; j++)
             matrix1[i][j] = 1;
-
-    for (i = 0; i < size; i++)
-        for (j = 0; j < size; j++)
-        matrix2[i][j] = 2;
-
-    for (i = 0; i < size; i++)
-        for (j = 0; j < size; j++)
-            matrixR[i][j] = 0;
 
     int * id;
     for (i = 0; i < size; i++){
@@ -52,13 +45,14 @@ int main(int argc, char *argv[]) {
             exit(1);
         }
     }
-
+    
   printf("Bye!\n");
 }
 
 void *Worker(void *arg) {
     int myid = *(int *)(arg);
     int j, k;
+    int sum = 0;
 
     int self = pthread_self();
     
@@ -66,19 +60,21 @@ void *Worker(void *arg) {
 
     for(j = 0; j < size; j++){
         for(k = 0; k < size; k++){
-            matrixR[myid][j]=matrixR[myid][j]+(matrix1[myid][k]*matrix2[k][j]); // multiplicação
+            sum += matrix1[j][k];
         }
     }
 
     pthread_barrier_wait(&barrier);
 
     if (myid == 0) {
-        printf("\n ");
+        printf("\nMATRIX:\n ");
         for(j = 0; j < size; j++){
             for(k = 0; k < size; k++){
-                printf("%d ",matrixR[j][k]);   
+                printf("%d ",matrix1[j][k]);  
+                
             }
             printf("\n ");
         }
+        printf("\nTotal Sum = %d\n", sum); 
     }
 }

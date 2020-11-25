@@ -39,3 +39,12 @@ Problema do barbeiro dorminhoco, resolvido com semáforos e lock.
 
 10. ```filosofos.c``` <br>
 Problema clássico do jantar dos filósofos, resolvido com semáforos.
+
+11. ```ABCD_barreira.c``` <br>
+Estudo de barreira, com o problema de impressão de letras em ordem alfabética.
+
+12. ```matriz_multiplicacao_barreira.c``` <br>
+Estudo de barreiras, com o problema de multiplicação de matrizes.
+
+13. ```matriz_soma_barreira.c``` <br>
+Problema de soma de matrizes, resolvido com barreira.

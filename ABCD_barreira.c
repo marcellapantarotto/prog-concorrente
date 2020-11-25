@@ -6,7 +6,7 @@
 #define PAC 10  
 #define PBD 5   
 
-pthread_barrier_t barrier;  
+pthread_barrier_t barrier;      // não dá erro pra executar
 
 void * func_pac(void *arg) {
   int myid = *(int *)(arg);
