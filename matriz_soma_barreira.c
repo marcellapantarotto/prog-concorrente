@@ -1,5 +1,7 @@
 // Marcella Pantarotto (13/0143880)
 
+// Utilizando como base o código para multiplicação de matrizes, faça um programa para somar os valores dos elementos de uma matriz utilizando várias threads
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
