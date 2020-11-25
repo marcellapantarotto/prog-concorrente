@@ -47,4 +47,4 @@ Estudo de barreira, com o problema de impressão de letras em ordem alfabética.
 Estudo de barreiras, com o problema de multiplicação de matrizes.
 
 13. ```matriz_soma_barreira.c``` <br>
-Problema de soma de matrizes, resolvido com barreira.
+Somar todos os elementos de uma matriz usando barreira.
