@@ -52,7 +52,7 @@ Estudo de barreiras, com o problema de multiplicação de matrizes.
 Somar todos os elementos de uma matriz usando barreira.
 
 14. ```exchange_mpi.c``` <br>
-
+Um programa MPI simples que troca valores entre dois processos, ilustrando o uso de enviar e receber mensagens.
 
 <br>
 

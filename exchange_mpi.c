@@ -1,6 +1,5 @@
 /* simple MPI program to exchange values between two processes
    this illustrates the use of send and receive
-
 */
 
 #include <stdio.h>
