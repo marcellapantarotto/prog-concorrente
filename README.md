@@ -6,6 +6,8 @@ Para compilar qualquer dos programas abaixo, utilizar o seguinte comando: <br>
 ```gcc -pthread programa.c -o programa``` <br>
 Para executar: ```./programa```
 
+<br>
+
 #### ORDEM:
 
 1. ```tarefa3.c``` <br>
@@ -48,3 +50,11 @@ Estudo de barreiras, com o problema de multiplicação de matrizes.
 
 13. ```matriz_soma_barreira.c``` <br>
 Somar todos os elementos de uma matriz usando barreira.
+
+14. ```exchange_mpi.c``` <br>
+
+
+<br>
+
+### Manual Pthreads: 
+<link>https://computing.llnl.gov/tutorials/pthreads/</link>
