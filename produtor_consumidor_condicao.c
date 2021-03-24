@@ -114,7 +114,7 @@ void *consumidor(void *pi) {
     pthread_mutex_lock(&mutex);   // consumidor pega o lock do buffer
       while (count == 0) {    // verifica se o buffer está vazio
         printf("Buffer está vazio!\n\n");
-        pthread_cond_wait(&consumidor_cond, &mutex);    // adormece o produtor
+        pthread_cond_wait(&consumidor_cond, &mutex);    // adormece o consumidor
       }
       index_remove = (index_remove + 1) % N;    // cálculo do índice do array circular
       remove_data(index_remove);    // remover dado do buffer
